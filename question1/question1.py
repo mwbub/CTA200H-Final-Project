@@ -2,6 +2,7 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astroquery.simbad import Simbad
 from astroquery.gaia import Gaia
+from galpy.orbit import Orbit
 
 def star_to_orbit(star_name, radius = 1.0*u.arcsec):
     # Get data on the star from SIMBAD, for use in epoch adjustment
@@ -10,8 +11,9 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
     simbad_table = custom_simbad.query_object(star_name)
     
     # Convert ra and dec from SIMBAD into a SkyCoord object
-    simbad_coord = SkyCoord(simbad_table['RA'][0], 
-                            simbad_table['DEC'][0], 
+    # to transform into degrees
+    simbad_coord = SkyCoord(ra = simbad_table['RA'][0], 
+                            dec = simbad_table['DEC'][0],
                             unit = (u.hourangle, u.deg))
     
     # Store the SIMBAD values in a tuple of the form 
@@ -39,5 +41,29 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
              
     # Perfrom the cone search and get the result in a table
     job = Gaia.launch_job_async(query)
-    return job.get_results()
+    gaia_table = job.get_results()
+    
+    # If no Gaia entries are found, use the SIMBAD entries
+    if len(gaia_table) != 0:
+        ra = gaia_table['ra'][0]
+        dec = gaia_table['dec'][0]
+        plx = gaia_table['parallax'][0]
+        pmra = gaia_table['pmra'][0]
+        pmdec = gaia_table['pmdec'][0]
+        rv = gaia_table['radial_velocity'][0]
+    else:
+        ra, dec, plx, pmra, pmdec, rv = simbad_vals
+        
+    if str(rv) == '--' and str(simbad_vals[5]) == '--':
+        # Set rv to 20.0 if not available in either the Gaia or SIMBAD tables
+        rv = 20.0
+    elif str(rv) == '--':
+        # Use the SIMBAD rv if not available in GAIA
+        rv = simbad_vals[5]
+        
+    # Generate and return a galpy.orbit.Orbit object
+    orbit = Orbit(vxvv = (ra, dec, 1/plx, pmra, pmdec, rv), radec = True)
+    return orbit
+        
+    
 
