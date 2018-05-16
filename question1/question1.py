@@ -8,8 +8,14 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
     custom_simbad = Simbad()
     custom_simbad.add_votable_fields('pmra', 'pmdec', 'plx', 'rv_value')
     simbad_table = custom_simbad.query_object(star_name)
-    simbad_coord = SkyCoord(simbad_table['RA'][0], simbad_table['DEC'][0], 
+    
+    # Convert ra and dec from SIMBAD into a SkyCoord object
+    simbad_coord = SkyCoord(simbad_table['RA'][0], 
+                            simbad_table['DEC'][0], 
                             unit = (u.hourangle, u.deg))
+    
+    # Store the SIMBAD values in a tuple of the form 
+    # (ra, dec, plx, pmra, pmdec, rv)
     simbad_vals = (simbad_coord.ra.value,
                    simbad_coord.dec.value,
                    simbad_table['PLX_VALUE'][0],
@@ -17,7 +23,7 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
                    simbad_table['PMDEC'][0],
                    simbad_table['RV_VALUE'][0])
     
-    # Circle radius to query Gaia
+    # Circle radius to query Gaia, in degrees
     radius_deg = radius.to(u.deg)
     
     # Perform a cone search with epoch adjustment
