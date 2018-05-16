@@ -3,6 +3,8 @@ from astropy.coordinates import SkyCoord
 from astroquery.simbad import Simbad
 from astroquery.gaia import Gaia
 
+# Note: convert this program into a function.
+
 # Stars to query
 stars = ["GJ 440", "Lacaille 8760", "Vega"]
 
@@ -26,7 +28,7 @@ simbad_vals = [(simbad_coords[i].ra.value, simbad_coords[i].dec.value,
 radius = (1.0*u.arcsec).to(u.deg)
 
 # Perform a cone search for each star with epoch adjustment
-querys = ["""
+queries = ["""
 SELECT *
 FROM gaiadr2.gaia_source
 WHERE 1=CONTAINS(
@@ -38,5 +40,5 @@ WHERE 1=CONTAINS(
 """.format(*simbad_vals[i], radius.value) for i in range(len(stars))]
 
 # Perform each query and get the result in a table
-jobs = [Gaia.launch_job_async(query) for query in querys]
+jobs = [Gaia.launch_job_async(query) for query in queries]
 results = [job.get_results() for job in jobs]

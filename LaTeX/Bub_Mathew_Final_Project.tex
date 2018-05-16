@@ -1,0 +1,21 @@
+\documentclass[12pt]{article}
+
+\begin{document}
+\huge 
+\textbf{CTA200H Final Project}
+\Large
+
+Student: Mathew Bub
+
+Supervisor: Jo Bovy
+
+May 18, 2018
+
+\normalsize
+
+\section*{Question 1}
+The first question asks us to write a function that takes the name of a star and returns a galpy.Orbit object. To do so, we must first retrieve data about the star's position and velocity from the \textit{Gaia} DR2 catalogue. However, \textit{Gaia} does not store the names of stars. Thus, each star name must first be correlated with a position (in right ascension and declination) in order to query the \textit{Gaia} catalogue.
+
+My function first queries the SIMBAD catalogue for the star's name, retrieving a table containing the right ascension, declination, parallax, proper motion, and radial velocity (if available) for that star. This data is used in the \verb EPOCH_PROP_POS  function built into the \textit{Gaia} Archive ADQL query tool. The function returns the right ascension and declination of the star propagated from a reference epoch to a later time. The \textit{Gaia} catalogue is then queried in a 1 arcsecond radius around these propagated coordinates, which returns the data for the desired star in a table.
+
+\end{document}
