@@ -3,8 +3,14 @@ from astropy.coordinates import SkyCoord
 from astroquery.simbad import Simbad
 from astroquery.gaia import Gaia
 from galpy.orbit import Orbit
+from numpy.ma import is_masked
 
 def star_to_orbit(star_name, radius = 1.0*u.arcsec):
+    """ 
+    Given the name of a star, returns a galpy.orbit.Orbit object for that 
+    star using data from the Gaia dr2 catalogue. If no data on the star can
+    be found from Gaia, then data from SIMBAD is used instead.
+    """
     # Get data on the star from SIMBAD, for use in epoch adjustment
     custom_simbad = Simbad()
     custom_simbad.add_votable_fields('pmra', 'pmdec', 'plx', 'rv_value')
@@ -28,6 +34,9 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
     # Circle radius to query Gaia, in degrees
     radius_deg = radius.to(u.deg)
     
+    # Replace masked values from the SIMBAD table with 0.0 for epoch adjustment
+    epoch_prop_vals = [val if not is_masked(val) else 0.0 for val in simbad_vals]
+    
     # Perform a cone search with epoch adjustment
     query =  """
              SELECT source_id, ra, dec, pmra, pmdec, parallax, radial_velocity
@@ -37,7 +46,7 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
              CIRCLE('ICRS', 
              COORD1(EPOCH_PROP_POS({0},{1},{2},{3},{4},{5},2000,2015.5)),
              COORD2(EPOCH_PROP_POS({0},{1},{2},{3},{4},{5},2000,2015.5)), {6}))
-             """.format(*simbad_vals, radius_deg.value)
+             """.format(*epoch_prop_vals, radius_deg.value)
              
     # Perfrom the cone search and get the result in a table
     job = Gaia.launch_job_async(query)
@@ -54,10 +63,10 @@ def star_to_orbit(star_name, radius = 1.0*u.arcsec):
     else:
         ra, dec, plx, pmra, pmdec, rv = simbad_vals
         
-    if str(rv) == '--' and str(simbad_vals[5]) == '--':
+    if is_masked(rv) and is_masked(simbad_vals[-1]):
         # Set rv to 20.0 if not available in either the Gaia or SIMBAD tables
         rv = 20.0
-    elif str(rv) == '--':
+    elif is_masked(rv):
         # Use the SIMBAD rv if not available in GAIA
         rv = simbad_vals[5]
         
