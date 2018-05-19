@@ -43,7 +43,7 @@ coord_path = "data/integrated_{}_steps".format(nsteps)
 
 # Choose whether to use astropy physical units, or to convert time
 # to Gyr using galpy.util.bovy_conversion
-physical = True
+physical = False
 if physical:
     t *= u.Gyr
     coord_path += "_physical"
@@ -76,7 +76,7 @@ else:
 print("Plotting...")
 x_coords = x.flatten()
 y_coords = y.flatten()
-H, xedges, yedges = np.histogram2d(x_coords, y_coords, bins = 100,
+H, xedges, yedges = np.histogram2d(x_coords, y_coords, bins = 250,
                                    range = ((-15, 15), (-15, 15)))
 X, Y = np.meshgrid(xedges, yedges)
 plt.pcolormesh(X, Y, H, cmap = 'plasma')

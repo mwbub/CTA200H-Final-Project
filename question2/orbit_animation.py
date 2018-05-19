@@ -20,7 +20,8 @@ else:
     
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
-ax.set(xlim = (-30, 30), ylim = (-30, 30))
+ax.set(xlim = (-30, 30), ylim = (-30, 30), xlabel = "x (kpc)", 
+       ylabel = "y (kpc)", title = "APOGEE Red Clump Integrated Over 20 Gyr")
 scatter = ax.scatter(x[0], y[0], s=0.1)    
 
 def animate(i):
