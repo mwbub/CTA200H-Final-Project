@@ -43,7 +43,7 @@ coord_path = "data/integrated_{}_steps".format(nsteps)
 
 # Choose whether to use astropy physical units, or to convert time
 # to Gyr using galpy.util.bovy_conversion
-physical = False
+physical = True
 if physical:
     t *= u.Gyr
     coord_path += "_physical"
