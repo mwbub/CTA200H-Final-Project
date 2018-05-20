@@ -7,7 +7,7 @@ from galpy.actionAngle import actionAngleStaeckel
 
 def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple, 
                             pmdec: tuple, rv: tuple, ro: float = None, 
-                            vo: float = None, nsamples:int = 100000) -> tuple:
+                            vo: float = None, nsamples: int = 100000) -> tuple:
     """ Converts ICRS coordinates and their Gaussian uncertainties for a star
     in the Milky War into eccentricity, maximum height above the plane, 
     pericentre, and apocentre with uncertainties.
@@ -89,7 +89,7 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     # Calculate EccZmaxRperiRap
     aAS = actionAngleStaeckel(pot=MWPotential2014, delta=0.4, ro=ro, vo=vo)
     orbit_vals = aAS.EccZmaxRperiRap(R, vR, vT, z, vz, phi)
-
+    
     # Get the mean and standard deviation of the samples
     ecc_val, zmax_val, rperi_val, rap_val = np.mean(orbit_vals, axis=1)
     ecc_err, zmax_err, rperi_err, rap_err = np.std(orbit_vals, axis=1)
@@ -132,3 +132,4 @@ if __name__ == '__main__':
     print("zmax = " + "{} +/- {} kpc".format(*zmax))
     print("rperi = " + "{} +/- {} kpc".format(*rperi))
     print("rap = " + "{} +/- {} kpc".format(*rap))
+    

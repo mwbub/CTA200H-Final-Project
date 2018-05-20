@@ -43,7 +43,7 @@ coord_path = "data/integrated_{}_steps".format(nsteps)
 
 # Choose whether to use astropy physical units, or to convert time
 # to Gyr using galpy.util.bovy_conversion
-physical = False
+physical = True
 if physical:
     t *= u.Gyr
     coord_path += "_physical"
@@ -82,5 +82,5 @@ X, Y = np.meshgrid(xedges, yedges)
 plt.pcolormesh(X, Y, H, cmap = "plasma")
 plt.xlabel("x (kpc)")
 plt.ylabel("y (kpc)")
-plt.title("Density of APOGEE Red Clump Stars Integrated Over 20Gyr")
+plt.title("Density of APOGEE Red Clump Stars Integrated Over 20 Gyr")
 plt.show()
