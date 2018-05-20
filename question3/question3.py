@@ -6,7 +6,8 @@ from galpy.potential import MWPotential2014
 from galpy.actionAngle import actionAngleStaeckel
 
 def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple, 
-                            pmdec: tuple, rv: tuple) -> tuple:
+                            pmdec: tuple, rv: tuple, ro: float = None, 
+                            vo: float = None, nsamples:int = 100000) -> tuple:
     """ Converts ICRS coordinates and their Gaussian uncertainties for a star
     in the Milky War into eccentricity, maximum height above the plane, 
     pericentre, and apocentre with uncertainties.
@@ -25,16 +26,25 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
         pmra - Proper motion in RA with uncertainty, given as a tuple of the 
         form (PMRA, PMRA_ERR). Can be Quantity, otherwise given in mas/yr.
     
-        pmdec - Proper motion in DEC with uncertainty, given as a tuple of the 
+        pmdec - Proper motion in Dec with uncertainty, given as a tuple of the 
         form (PMDEC, PMDEC_ERR). Can be Quantity, otherwise given in mas/yr.
     
         rv - Radial velocity with uncertainty, given as a tuple of the form
         (RV, RV_ERR). Can be Quantity, otherwise given in km/s.
+        
+        ro (optional) - Distance scale. Can be Quantity, otherwise given in
+        kpc. If provided with vo, activates output in physical units.
+        
+        vo (optional) - Velocity scale. Can be Quantity, otherwise given in 
+        km/s. If provided with ro, activates output in physical units.
+        
+        nsamples (optional) - Number of samples for the Monte Carlo method.
     
     Returns:
         
         (e, zmax, rperi, rap), each a tuple of the form (VALUE, VALUE_ERR).
-        Distances are given in kpc.
+        If ro and vo are provided, distances are returned in kpc. Otherwise
+        returns galpy natural units.
     """
     # Convert each value and its error into astropy Quantities
     ra_val, ra_err = u.Quantity(ra, u.deg)
@@ -51,7 +61,7 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
                     pmdec_err.value, rv_err.value])
     
     # Sample the normal distribution
-    samples = np.random.multivariate_normal(mean, cov, size=100000)
+    samples = np.random.multivariate_normal(mean, cov, size=nsamples)
     ra_samples = samples[:, 0] * u.deg
     dec_samples = samples[:, 1] * u.deg
     d_samples = samples[:, 2] * u.kpc
@@ -61,7 +71,7 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     
     coords = SkyCoord(frame="icrs", ra=ra_samples, dec=dec_samples,
                       distance=d_samples, pm_ra_cosdec=pmra_samples, 
-                      pm_dec=pmdec_samples, radial_velocity = rv_samples)
+                      pm_dec=pmdec_samples, radial_velocity=rv_samples)
     
     # Convert to galactocentric frame
     gal_coords = coords.transform_to("galactocentric")
@@ -73,11 +83,11 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     z = gal_coords.z.to(u.kpc)
     vR = gal_coords.d_rho.to(u.km/u.s)
     vT = (gal_coords.d_phi * R).to(u.km/u.s, 
-         equivalencies = u.dimensionless_angles())
+         equivalencies=u.dimensionless_angles())
     vz = gal_coords.d_z.to(u.km/u.s)
     
     # Calculate EccZmaxRperiRap
-    aAS = actionAngleStaeckel(pot=MWPotential2014, delta=0.4, ro=8., vo=220.)
+    aAS = actionAngleStaeckel(pot=MWPotential2014, delta=0.4, ro=ro, vo=vo)
     orbit_vals = aAS.EccZmaxRperiRap(R, vR, vT, z, vz, phi)
 
     # Get the mean and standard deviation of the samples
@@ -116,7 +126,8 @@ if __name__ == '__main__':
     d_err = abs((stars[0]["parallax_error"]/stars[0]["parallax"]) * d_val)
     d = (d_val, d_err)
     
-    ecc, zmax, rperi, rap = icrs_to_EccZmaxRperiRap(ra,dec,d,pmra,pmdec,rv)
+    ecc, zmax, rperi, rap = icrs_to_EccZmaxRperiRap(ra, dec, d, pmra, pmdec, 
+                                                    rv, ro=8., vo=220.)
     print("e = " + "{} +/- {}".format(*ecc))
     print("zmax = " + "{} +/- {} kpc".format(*zmax))
     print("rperi = " + "{} +/- {} kpc".format(*rperi))
