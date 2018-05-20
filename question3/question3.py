@@ -66,7 +66,7 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     gal_coords = coords.transform_to("galactocentric")
     gal_coords.representation_type = "cylindrical"
     
-    # Convert each value into desired units
+    # Convert each value into consistent units
     R = gal_coords.rho.to(u.kpc)
     phi = gal_coords.phi.to(u.deg)
     z = gal_coords.z.to(u.kpc)
