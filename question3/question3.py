@@ -116,7 +116,8 @@ if __name__ == '__main__':
     d_err = abs((stars[0]["parallax_error"]/stars[0]["parallax"]) * d_val)
     d = (d_val, d_err)
     
-    coords = icrs_to_EccZmaxRperiRap(ra, dec, d, pmra, pmdec, rv)
-    for line in coords:
-        print(line)
-    
+    ecc, zmax, rperi, rap = icrs_to_EccZmaxRperiRap(ra,dec,d,pmra,pmdec,rv)
+    print("e = " + "{} +/- {}".format(*ecc))
+    print("zmax = " + "{} +/- {} kpc".format(*zmax))
+    print("rperi = " + "{} +/- {} kpc".format(*rperi))
+    print("rap = " + "{} +/- {} kpc".format(*rap))
