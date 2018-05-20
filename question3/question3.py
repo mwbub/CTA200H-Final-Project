@@ -34,6 +34,7 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     Returns:
         
         (e, zmax, rperi, rap), each a tuple of the form (VALUE, VALUE_ERR).
+        Distances are given in kpc.
     """
     # Convert each value and its error into astropy Quantities
     ra_val, ra_err = u.Quantity(ra, u.deg)
@@ -76,9 +77,9 @@ def icrs_to_EccZmaxRperiRap(ra: tuple, dec: tuple, d: tuple, pmra: tuple,
     vz = gal_coords.d_z.to(u.km/u.s)
     
     # Calculate EccZmaxRperiRap
-    aAS = actionAngleStaeckel(pot=MWPotential2014, delta=0.4)
+    aAS = actionAngleStaeckel(pot=MWPotential2014, delta=0.4, ro=8., vo=220.)
     orbit_vals = aAS.EccZmaxRperiRap(R, vR, vT, z, vz, phi)
-    
+
     # Get the mean and standard deviation of the samples
     ecc_val, zmax_val, rperi_val, rap_val = np.mean(orbit_vals, axis=1)
     ecc_err, zmax_err, rperi_err, rap_err = np.std(orbit_vals, axis=1)
